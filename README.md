@@ -1,41 +1,39 @@
-# TG-BWSA
-
 # TG-BWSA: Trainable Gated Block-Wise Shared Adapter for Multimodal Brain Tumor Segmentation
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
+![PyTorch](https://img.shields.io/badge/PyTorch-1.13%2B-orange)
 
-Official implementation of the TG-BWSA module from our paper:
+Official implementation of **TG-BWSA**, introduced in:
 
 > **Improved Multimodal Fusion for Brain Tumor Segmentation via Trainable Gated Block-Wise Shared Adapters**  
-> Milad Rostamian, Mohsen Soryani, Mohammad Reza Mohammadi, Ender Konukoglu  
-> *IEEE Transactions on Medical Imaging (TMI), 2025 (under review)*
+> **Milad Rostamian**, **Mohammadreza Mohammadi**, **Ender Konukoglu**, **Mohsen Soryani**  
+> *IEEE Transactions on Medical Imaging (TMI), under review*
 
-[[Paper (PDF)]](https://arxiv.org/abs/xxxx.xxxxx) • [[Project Page]](https://milad67.github.io) • [[License]](#license)
+<!-- Uncomment/add when available -->
+<!-- [[Paper (arXiv)]](https://arxiv.org/abs/XXXX.XXXXX) • [[Project Page]](https://milad67.github.io/TG-BWSA) -->
 
 ---
 
 ## 🔍 Overview
 
-**TG-BWSA** is a lightweight, architecture-agnostic module designed for multimodal MRI fusion. It performs dynamic block-wise feature adaptation using learnable gating, SE attention, and depthwise separable convolutions. TG-BWSA improves segmentation—especially of challenging tumor subregions—while preserving encoder compatibility and remaining under 4% parameter overhead.
+**TG-BWSA** is a lightweight, architecture-agnostic adapter for multimodal MRI fusion. It performs **block-wise** feature adaptation with **trainable dual gates** (α for the fused path, β for the identity path), plus **SE attention** and **depthwise-separable convolutions**.
 
-> ✅ Architecture-agnostic  
-> ✅ Pretrained or randomly initialized encoders  
-> ✅ Robust to modality noise and missing data  
-> ✅ Validated on BraTS 2020 & BraTS 2023  
+- Works with pretrained **and** randomly initialized encoders  
+- Robust to **missing modalities** and modality noise  
+- Validated on **BraTS 2020** and **BraTS 2023**  
+- Parameter overhead **<~4% in our configs**
 
----
+### ✨ Highlights
 
-## 🧠 Highlights
-
-| Feature              | TG-BWSA                   |
-|---------------------|---------------------------|
-| Dynamic Gating      | ✓ (α, β per block & modality) |
-| SE Attention        | ✓ |
-| Depthwise Conv      | ✓ |
-| Plug-and-Play       | ✓ |
-| Overhead            | < 4% |
-| Missing Modalities  | Robust |
-| Code                | PyTorch 1.13+ |
+| Capability | TG-BWSA |
+|---|---|
+| Per-stage, per-modality gates (α, β) | ✓ |
+| Squeeze-and-Excitation | ✓ |
+| Depthwise-separable conv | ✓ |
+| Plug-and-play (UNet/Transformer) | ✓ |
+| Robust to missing modalities | ✓ |
+| PyTorch | 1.13+ |
 
 ---
 
