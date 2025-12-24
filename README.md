@@ -3,6 +3,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
 ![PyTorch](https://img.shields.io/badge/PyTorch-1.13%2B-orange)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-2.10%2B-FF6F00)
 
 Official implementation of **TG-BWSA**, introduced in:
 
@@ -22,6 +23,7 @@ Official implementation of **TG-BWSA**, introduced in:
 - Robust to **missing modalities** and modality noise  
 - Validated on **BraTS 2020** and **BraTS 2023**  
 - Parameter overhead **<~4% in our configs**
+- Available in **PyTorch** and **TensorFlow/Keras**
 
 ### ✨ Highlights
 
@@ -31,9 +33,11 @@ Official implementation of **TG-BWSA**, introduced in:
 | Depthwise-separable conv | ✓ |
 | Plug-and-play (UNet/Transformer) | ✓ |
 | Robust to missing modalities | ✓ |
-| PyTorch | 1.13+ |
+| PyTorch + TensorFlow | ✓ |
 
 ---
 
 ## 📦 Installation
+
+### PyTorch Version
 
