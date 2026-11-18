@@ -1,0 +1,14 @@
+{
+  "dataset": "BraTS2023",
+  "split_seeds": [
+    2026,
+    2027
+  ],
+  "training_seed": 1024,
+  "training_cases": 1000,
+  "validation_cases": 251,
+  "epochs": 300,
+  "batch_size": 2,
+  "checkpoint_selection": "Highest mean validation Dice",
+  "patient_grouping": "All timepoints from the same patient remain in one partition."
+}

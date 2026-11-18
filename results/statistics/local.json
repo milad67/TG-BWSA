@@ -1,0 +1,127 @@
+{
+  "method": "Paired patient-cluster percentile bootstrap, separately within each local validation split",
+  "n_resamples": 10000,
+  "analysis_seed": 20261112,
+  "rng": "numpy.default_rng using SeedSequence(20261112).spawn(2), split order 2026 then 2027",
+  "estimand": "MRI-case-weighted mean paired Dice difference; macro averages WT, TC and ET",
+  "multiple_comparison_adjustment": "None; pointwise descriptive 95% intervals, no family-wise significance claims",
+  "splits": {
+    "2026": {
+      "source_sha256": "1f513c1ec747b42a7899dd93745ac1a52cc39103c46f565e694c3e5148330509",
+      "MRI_cases": 251,
+      "patient_groups": 227,
+      "means": {
+        "RFNet": 0.8943342512426931,
+        "RFNet + BWSA": 0.898622526791162,
+        "RFNet + TG-BWSA": 0.8998533384579148
+      },
+      "comparisons_with_RFNet": {
+        "RFNet + BWSA": {
+          "Mean_Dice": {
+            "increase_pp": 0.42882755484689566,
+            "ci95_lower_pp": 0.049883275959796164,
+            "ci95_upper_pp": 0.8865610678337289
+          },
+          "WT": {
+            "increase_pp": 0.42746911439292085,
+            "ci95_lower_pp": 0.12374610460995578,
+            "ci95_upper_pp": 0.8149627235619448
+          },
+          "TC": {
+            "increase_pp": 0.3284618492147725,
+            "ci95_lower_pp": -0.19121917390881843,
+            "ci95_upper_pp": 0.9295639560337913
+          },
+          "ET": {
+            "increase_pp": 0.5305517009329905,
+            "ci95_lower_pp": -0.22790119847064144,
+            "ci95_upper_pp": 1.4603011260347847
+          }
+        },
+        "RFNet + TG-BWSA": {
+          "Mean_Dice": {
+            "increase_pp": 0.551908721522135,
+            "ci95_lower_pp": 0.16549641040418822,
+            "ci95_upper_pp": 1.017393444643092
+          },
+          "WT": {
+            "increase_pp": 0.4408358203616325,
+            "ci95_lower_pp": 0.040277918474634675,
+            "ci95_upper_pp": 0.9504032297718117
+          },
+          "TC": {
+            "increase_pp": 0.6881697769292907,
+            "ci95_lower_pp": -0.055193664186198706,
+            "ci95_upper_pp": 1.7334783108290306
+          },
+          "ET": {
+            "increase_pp": 0.5267205672754792,
+            "ci95_lower_pp": -0.04465314061528418,
+            "ci95_upper_pp": 1.28961353220627
+          }
+        }
+      }
+    },
+    "2027": {
+      "source_sha256": "b1e93d5a8ba6a47b40ed3879e75d89626c1686f406f63696c4001f504c32fa70",
+      "MRI_cases": 251,
+      "patient_groups": 227,
+      "means": {
+        "RFNet": 0.8802187250996018,
+        "RFNet + BWSA": 0.884437188579018,
+        "RFNet + TG-BWSA": 0.8854413346613546
+      },
+      "comparisons_with_RFNet": {
+        "RFNet + BWSA": {
+          "Mean_Dice": {
+            "increase_pp": 0.4218463479415675,
+            "ci95_lower_pp": -0.18777735350556207,
+            "ci95_upper_pp": 1.0208200390710385
+          },
+          "WT": {
+            "increase_pp": 0.4068258964143418,
+            "ci95_lower_pp": 0.0038254637349391064,
+            "ci95_upper_pp": 0.7874833429508196
+          },
+          "TC": {
+            "increase_pp": 0.36437410358565775,
+            "ci95_lower_pp": -0.5558918085356673,
+            "ci95_upper_pp": 1.2742760468421055
+          },
+          "ET": {
+            "increase_pp": 0.49433904382470084,
+            "ci95_lower_pp": -0.5968286693701388,
+            "ci95_upper_pp": 1.6034995299999992
+          }
+        },
+        "RFNet + TG-BWSA": {
+          "Mean_Dice": {
+            "increase_pp": 0.5222609561752992,
+            "ci95_lower_pp": -0.08952153859437713,
+            "ci95_upper_pp": 1.1414952299481318
+          },
+          "WT": {
+            "increase_pp": 0.4480402390438243,
+            "ci95_lower_pp": 0.07488145826551927,
+            "ci95_upper_pp": 0.8225975246155284
+          },
+          "TC": {
+            "increase_pp": 0.6132338645418327,
+            "ci95_lower_pp": -0.41880695262258044,
+            "ci95_upper_pp": 1.6541405378486058
+          },
+          "ET": {
+            "increase_pp": 0.5055087649402384,
+            "ci95_lower_pp": -0.5709422929380997,
+            "ci95_upper_pp": 1.5842130341748024
+          }
+        }
+      }
+    }
+  },
+  "overlap_between_validation_splits": {
+    "patients": 53,
+    "MRI_cases": 58,
+    "pooled_as_independent": false
+  }
+}

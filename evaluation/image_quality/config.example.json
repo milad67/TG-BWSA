@@ -1,0 +1,95 @@
+{
+  "dataset": "BraTS2023",
+  "training_regime": "full_input",
+  "data_root": "EDIT_PATH_TO_PROCESSED_BRATS2023",
+  "test_file": "data/splits/brats2023/validation.txt",
+  "expected_cases": 251,
+  "same_original_validation_cohort_confirmed": false,
+  "layout": "HWDC",
+  "channel_order": [
+    "FLAIR",
+    "T1ce",
+    "T1",
+    "T2"
+  ],
+  "channel_order_confirmed": false,
+  "foreground_method": "constant_background",
+  "foreground_dir": null,
+  "noise_base_seed": 20261113,
+  "evaluation_seed": 1024,
+  "output_dir": "outputs/degradation_full",
+  "models": [
+    {
+      "name": "RFNet",
+      "repo_dir": "EDIT_PATH_TO_FINAL_RFNET_BASE_CODE",
+      "model_module": "models",
+      "model_class": "Model",
+      "model_kwargs": {
+        "num_cls": 4
+      },
+      "checkpoint": "EDIT_PATH_TO_FULL_INPUT_RFNET_CHECKPOINT.pth",
+      "checkpoint_key": "state_dict",
+      "state_prefix_to_strip": "module.",
+      "predict_module": "predict",
+      "evaluation_function": "test_softmax",
+      "evaluation_kwargs": {
+        "dataname": "BRATS2023"
+      },
+      "metric_function": "softmax_output_dice_class4",
+      "metric_return_index": 1,
+      "dice_indices": [
+        0,
+        1,
+        3
+      ]
+    },
+    {
+      "name": "RFNet_BWSA",
+      "repo_dir": "EDIT_PATH_TO_FINAL_RFNET_BWSA_CODE",
+      "model_module": "models",
+      "model_class": "Model",
+      "model_kwargs": {
+        "num_cls": 4
+      },
+      "checkpoint": "EDIT_PATH_TO_FULL_INPUT_RFNET_BWSA_CHECKPOINT.pth",
+      "checkpoint_key": "state_dict",
+      "state_prefix_to_strip": "module.",
+      "predict_module": "predict",
+      "evaluation_function": "test_softmax",
+      "evaluation_kwargs": {
+        "dataname": "BRATS2023"
+      },
+      "metric_function": "softmax_output_dice_class4",
+      "metric_return_index": 1,
+      "dice_indices": [
+        0,
+        1,
+        3
+      ]
+    },
+    {
+      "name": "RFNet_TG_BWSA",
+      "repo_dir": "EDIT_PATH_TO_FINAL_RFNET_TG_BWSA_CODE",
+      "model_module": "models",
+      "model_class": "Model",
+      "model_kwargs": {
+        "num_cls": 4
+      },
+      "checkpoint": "EDIT_PATH_TO_FULL_INPUT_RFNET_TG_BWSA_CHECKPOINT.pth",
+      "checkpoint_key": "state_dict",
+      "state_prefix_to_strip": "module.",
+      "predict_module": "predict",
+      "evaluation_function": "test_softmax",
+      "evaluation_kwargs": {
+        "dataname": "BRATS2023"
+      },
+      "metric_function": "softmax_output_dice_class4",
+      "metric_return_index": 1,
+      "dice_indices": [
+        0,
+        1,
+        3
+      ]
+    }
+  ]
+}

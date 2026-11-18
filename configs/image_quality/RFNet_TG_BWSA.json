@@ -1,0 +1,32 @@
+{
+  "dataset": "BraTS2023",
+  "training_regime": "full_input",
+  "expected_cases": 251,
+  "noise_base_seed": 20261113,
+  "channel_order": [
+    "FLAIR",
+    "T1ce",
+    "T1",
+    "T2"
+  ],
+  "model_config": {
+    "name": "RFNet_TG_BWSA",
+    "checkpoint": "rfnet_tg_bwsa_full_brats2023.pth",
+    "dice_indices": [
+      0,
+      1,
+      3
+    ],
+    "metric_function": "softmax_output_dice_class4"
+  },
+  "checkpoint_sha256": "5cc11d94b742daa144c7303c9937def4d50be527a95f9ce885e7906eddd9d52a",
+  "test_file_sha256": "6762ed2dd4666a02e37cb99d3e12b5fe40e1026ca6c6223fa3c2849ce27bcebe",
+  "noise_seed_method": "SHA256(base_seed|case_id|modality), first 8 bytes, big endian; numpy.default_rng(PCG64)",
+  "score_scale": "0 to 1",
+  "availability_mask": [
+    true,
+    true,
+    true,
+    true
+  ]
+}

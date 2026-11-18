@@ -1,0 +1,204 @@
+{
+  "source_sha256": "59c4327a3c78edbde0a7a3fa376d56282d9410aaca5257dea080ca40f56d0644",
+  "method": "Paired patient-cluster percentile bootstrap, stratified by institution",
+  "estimand": "Case-weighted mean difference in macro Dice or macro HD95; macro averages WT, TC and ET",
+  "n_resamples": 10000,
+  "numpy_version": "2.3.5",
+  "rng": "numpy.default_rng with SeedSequence(20261112).spawn(2), cohort order all_886 then unseen_sites_466",
+  "bootstrap_seed_not_training_seed": 20261112,
+  "confidence_level": 0.95,
+  "quantiles": [
+    2.5,
+    97.5
+  ],
+  "multiple_comparison_adjustment": "None; pointwise nominal CIs, not simultaneous intervals or family-wise tests",
+  "resampling": "Within each fixed institution, draw the original number of patient clusters with replacement; keep all timepoints together and use the same cluster weights for both methods",
+  "interpretation": "Conditional on these fitted models, fixed represented institutions, and their observed patient allocation; not uncertainty across training seeds or a population of unseen institutions",
+  "cohorts": {
+    "all_886": {
+      "MRI_cases": 886,
+      "patient_groups": 768,
+      "institution_count": 8,
+      "endpoints": {
+        "BWSA_Dice_increase_pp": {
+          "estimate": 2.181555154251317,
+          "ci95_lower": 1.8543269368189712,
+          "ci95_upper": 2.503514632135095
+        },
+        "BWSA_HD95_decrease_mm": {
+          "estimate": 1.4794104589917234,
+          "ci95_lower": 1.1427376312529722,
+          "ci95_upper": 1.8136152688416993
+        },
+        "TG_BWSA_Dice_increase_pp": {
+          "estimate": 2.997221030850261,
+          "ci95_lower": 2.684788246607399,
+          "ci95_upper": 3.301688017445911
+        },
+        "TG_BWSA_HD95_decrease_mm": {
+          "estimate": 1.9883524830699766,
+          "ci95_lower": 1.6647645391565773,
+          "ci95_upper": 2.3066779302968032
+        }
+      }
+    },
+    "unseen_sites_466": {
+      "MRI_cases": 466,
+      "patient_groups": 348,
+      "institution_count": 6,
+      "endpoints": {
+        "BWSA_Dice_increase_pp": {
+          "estimate": 2.2172751072961363,
+          "ci95_lower": 1.763167842312821,
+          "ci95_upper": 2.681423250097749
+        },
+        "BWSA_HD95_decrease_mm": {
+          "estimate": 1.524177968526467,
+          "ci95_lower": 1.0573749531640158,
+          "ci95_upper": 2.0056528501417312
+        },
+        "TG_BWSA_Dice_increase_pp": {
+          "estimate": 2.7674695278969934,
+          "ci95_lower": 2.363762259856631,
+          "ci95_upper": 3.1898559972307177
+        },
+        "TG_BWSA_HD95_decrease_mm": {
+          "estimate": 1.6482791130185979,
+          "ci95_lower": 1.2173222966658634,
+          "ci95_upper": 2.104182576049528
+        }
+      }
+    }
+  },
+  "institution_omission_sensitivity": {
+    "method": "Omit each of the six institutions from aggregation once; no model retraining and not leave-one-site-out cross-validation",
+    "results": {
+      "18": {
+        "excluded_institution": 18,
+        "remaining_MRI_cases": 84,
+        "remaining_patient_groups": 84,
+        "models": {
+          "RFNet": {
+            "Dice_macro": 0.8367563928571427,
+            "HD95_macro_mm": 13.104268253968257
+          },
+          "RFNet + BWSA": {
+            "Dice_macro": 0.856118884920635,
+            "HD95_macro_mm": 12.158112301587304
+          },
+          "RFNet + TG-BWSA": {
+            "Dice_macro": 0.8594503611111112,
+            "HD95_macro_mm": 11.932254365079363
+          }
+        },
+        "BWSA_Dice_increase_pp": 1.9362492063492387,
+        "TG_BWSA_Dice_increase_pp": 2.269396825396852
+      },
+      "19": {
+        "excluded_institution": 19,
+        "remaining_MRI_cases": 462,
+        "remaining_patient_groups": 344,
+        "models": {
+          "RFNet": {
+            "Dice_macro": 0.8311422474747475,
+            "HD95_macro_mm": 14.457120707070706
+          },
+          "RFNet + BWSA": {
+            "Dice_macro": 0.8534172301587298,
+            "HD95_macro_mm": 12.93226962481962
+          },
+          "RFNet + TG-BWSA": {
+            "Dice_macro": 0.8588229292929284,
+            "HD95_macro_mm": 12.801820707070705
+          }
+        },
+        "BWSA_Dice_increase_pp": 2.2274982683982314,
+        "TG_BWSA_Dice_increase_pp": 2.768068181818084
+      },
+      "20": {
+        "excluded_institution": 20,
+        "remaining_MRI_cases": 433,
+        "remaining_patient_groups": 315,
+        "models": {
+          "RFNet": {
+            "Dice_macro": 0.8299106666666669,
+            "HD95_macro_mm": 14.542174826789838
+          },
+          "RFNet + BWSA": {
+            "Dice_macro": 0.8521587390300228,
+            "HD95_macro_mm": 13.021294996150882
+          },
+          "RFNet + TG-BWSA": {
+            "Dice_macro": 0.8582795342571198,
+            "HD95_macro_mm": 12.867027328714396
+          }
+        },
+        "BWSA_Dice_increase_pp": 2.224807236335591,
+        "TG_BWSA_Dice_increase_pp": 2.8368867590452873
+      },
+      "21": {
+        "excluded_institution": 21,
+        "remaining_MRI_cases": 431,
+        "remaining_patient_groups": 313,
+        "models": {
+          "RFNet": {
+            "Dice_macro": 0.8308601337973709,
+            "HD95_macro_mm": 14.585765119876253
+          },
+          "RFNet + BWSA": {
+            "Dice_macro": 0.8538642536736272,
+            "HD95_macro_mm": 12.914435962877022
+          },
+          "RFNet + TG-BWSA": {
+            "Dice_macro": 0.859542349574632,
+            "HD95_macro_mm": 12.826550812064966
+          }
+        },
+        "BWSA_Dice_increase_pp": 2.300411987625628,
+        "TG_BWSA_Dice_increase_pp": 2.8682215777261155
+      },
+      "22": {
+        "excluded_institution": 22,
+        "remaining_MRI_cases": 459,
+        "remaining_patient_groups": 341,
+        "models": {
+          "RFNet": {
+            "Dice_macro": 0.8316236746550473,
+            "HD95_macro_mm": 14.350846405228756
+          },
+          "RFNet + BWSA": {
+            "Dice_macro": 0.8539173790849671,
+            "HD95_macro_mm": 12.848134350036304
+          },
+          "RFNet + TG-BWSA": {
+            "Dice_macro": 0.8590340711692073,
+            "HD95_macro_mm": 12.740397966594044
+          }
+        },
+        "BWSA_Dice_increase_pp": 2.2293704429919847,
+        "TG_BWSA_Dice_increase_pp": 2.7410396514159996
+      },
+      "23": {
+        "excluded_institution": 23,
+        "remaining_MRI_cases": 461,
+        "remaining_patient_groups": 343,
+        "models": {
+          "RFNet": {
+            "Dice_macro": 0.8321612219812005,
+            "HD95_macro_mm": 14.371966522053507
+          },
+          "RFNet + BWSA": {
+            "Dice_macro": 0.8537751424439621,
+            "HD95_macro_mm": 12.856244830079534
+          },
+          "RFNet + TG-BWSA": {
+            "Dice_macro": 0.8594066558206788,
+            "HD95_macro_mm": 12.73522791033984
+          }
+        },
+        "BWSA_Dice_increase_pp": 2.161392046276167,
+        "TG_BWSA_Dice_increase_pp": 2.7245433839478306
+      }
+    }
+  }
+}
