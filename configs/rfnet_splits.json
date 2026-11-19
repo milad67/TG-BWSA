@@ -5,10 +5,12 @@
     2027
   ],
   "training_seed": 1024,
-  "training_cases": 1000,
-  "validation_cases": 251,
+  "development_cases": 1000,
+  "training_cases": 900,
+  "internal_validation_cases": 100,
+  "local_evaluation_cases": 251,
   "epochs": 300,
   "batch_size": 2,
-  "checkpoint_selection": "Highest mean validation Dice",
+  "checkpoint_selection": "Highest mean internal-validation Dice",
   "patient_grouping": "All timepoints from the same patient remain in one partition."
 }
