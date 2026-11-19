@@ -13,7 +13,7 @@ The partitions are subject-disjoint. All MRI examinations from a patient remain 
 
 ## Additional RFNet experiments
 
-`splits/brats2023/split_2026` and `split_2027` each contain `development.txt` (1,000 cases), `train.txt` (900), `val.txt` (100), and `test.txt` (251). The generated train/val subdivision is patient-disjoint and is provided for new runs. The two-examination patients are kept together. `split_manifest.json` records the generation settings and counts. These generated internal lists do not identify the internal lists used by previously trained checkpoints.
+`splits/brats2023/split_2026` and `split_2027` each contain `development.txt` (1,000 cases), `train.txt` (900), `val.txt` (100), and `test.txt` (251). The final train/val subdivision is patient-disjoint. The two-examination patients are kept together. `split_manifest.json` records the generation settings and counts. The authors confirmed that these internal lists match the reported server runs.
 
 `splits/brats2023/validation.txt` now matches the confirmed main 251-case local-evaluation list. The former list associated with the existing image-quality results is preserved at `old_code/data/splits/brats2023/validation.txt` from the repository root. New scores for the replacement list require a new checkpoint evaluation.
 

@@ -36,11 +36,13 @@ MEFCT uses pretrained encoders with partial fine-tuning. [Online evaluation repo
 
 ## Usage
 
+[Download the updated code package](downloads/TG_BWSA_Updated_Code.zip)
+
 The exact training, internal-validation, and local-evaluation lists for BraTS 2020 and BraTS 2023 are in [data/splits](data/splits/). See [Data](data/) for counts and the separate additional RFNet and transfer experiments.
 
 Install the model dependencies specified in [configs](configs/). Obtain the BraTS data and set the data and checkpoint paths in the model scripts before training or inference.
 
-The generated 900/100 subdivisions for the two additional RFNet development sets are provided for new runs. They do not replace the saved training settings of existing checkpoints. See [updated code](updated_code/) for training and final-evaluation commands.
+The two additional RFNet splits each use 900 training, 100 internal-validation and 251 local-evaluation cases. See [updated code](updated_code/) for training and final-evaluation commands.
 
 For statistical analysis of the saved scores:
 

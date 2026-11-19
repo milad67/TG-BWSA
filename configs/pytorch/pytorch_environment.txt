@@ -1,0 +1,47 @@
+Collecting environment information...
+PyTorch version: 1.12.1
+Is debug build: False
+CUDA used to build PyTorch: 11.3
+ROCM used to build PyTorch: N/A
+
+OS: Microsoft Windows 10 Enterprise
+GCC version: Could not collect
+Clang version: Could not collect
+CMake version: Could not collect
+Libc version: N/A
+
+Python version: 3.8.20 | packaged by conda-forge | (default, Sep 30 2024, 17:44:03) [MSC v.1929 64 bit (AMD64)] (64-bit runtime)
+Python platform: Windows-10-10.0.19045-SP0
+Is CUDA available: False
+CUDA runtime version: No CUDA
+GPU models and configuration: No CUDA
+Nvidia driver version: No CUDA
+cuDNN version: No CUDA
+HIP runtime version: N/A
+MIOpen runtime version: N/A
+Is XNNPACK available: True
+
+Versions of relevant libraries:
+[pip3] numpy==1.24.4
+[pip3] pytorch-msssim==1.0.0
+[pip3] torch==1.12.1
+[pip3] torchaudio==0.12.1
+[pip3] torchmetrics==0.11.4
+[pip3] torchvision==0.13.1
+[conda] blas                      2.131                       mkl    conda-forge
+[conda] blas-devel                3.9.0           31_hfb1a452_mkl    conda-forge
+[conda] cudatoolkit               11.3.1              hf2f0253_13    conda-forge
+[conda] libblas                   3.9.0           31_h641d27c_mkl    conda-forge
+[conda] libcblas                  3.9.0           31_h5e41251_mkl    conda-forge
+[conda] liblapack                 3.9.0           31_h1aa476e_mkl    conda-forge
+[conda] liblapacke                3.9.0           31_h845c4fa_mkl    conda-forge
+[conda] mkl                       2024.2.2            h66d3029_15    conda-forge
+[conda] mkl-devel                 2024.2.2            h57928b3_15    conda-forge
+[conda] mkl-include               2024.2.2            h66d3029_15    conda-forge
+[conda] numpy                     1.24.4           py38h1d91fd2_0    conda-forge
+[conda] pytorch                   1.12.1          py3.8_cuda11.3_cudnn8_0    pytorch
+[conda] pytorch-msssim            1.0.0                    pypi_0    pypi
+[conda] pytorch-mutex             1.0                        cuda    pytorch
+[conda] torchaudio                0.12.1               py38_cu113    pytorch
+[conda] torchmetrics              0.11.4                   pypi_0    pypi
+[conda] torchvision               0.13.1               py38_cu113    pytorch

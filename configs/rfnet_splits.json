@@ -13,9 +13,10 @@
   "batch_size": 2,
   "checkpoint_selection": "Highest mean internal-validation Dice",
   "patient_grouping": "All timepoints from the same patient remain in one partition.",
-  "internal_lists_role": "Generated patient-disjoint 900/100 subdivisions for new runs.",
+  "internal_lists_role": "Final internal train/validation lists confirmed by the authors as used on the server.",
   "internal_split_seeds": [
     2026,
     2027
-  ]
+  ],
+  "author_confirmation_date": "2026-11-19"
 }

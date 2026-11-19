@@ -38,7 +38,7 @@ For final local evaluation, use the same split arguments and add:
 --resume /path/to/runs/rfnet_split2026/model_best.pth --evaluate-test
 ```
 
-Set each model's training settings explicitly; for example, supply `--num_epochs 1000` for the manuscript's mmFormer setting. These entry points are for new executions. Newly generated validation lists do not identify the settings of previously trained checkpoints.
+Set each model's training settings explicitly; for example, supply `--num_epochs 1000` for the manuscript's mmFormer setting. These entry points are for new executions. Use the matching recorded split lists when evaluating an existing checkpoint.
 
 ## Image-quality evaluation
 

@@ -1,0 +1,8 @@
+{
+  "python": "3.8.20",
+  "pytorch": "1.12.1",
+  "pytorch_cuda_build": "11.3",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "cuda_available_at_collection": false,
+  "collected_at_utc": "2026-11-19T15:47:57.717414+00:00"
+}
