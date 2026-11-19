@@ -1,0 +1,643 @@
+#!/usr/bin/env python
+#coding=utf-8
+
+import os
+import numpy as np
+import nibabel as nib
+import torch
+from torch.utils.data import Dataset, DataLoader
+from tqdm import tqdm
+from mmformer import Model  # your RFNet model class ormmformer
+from scipy.ndimage import label, generate_binary_structure
+
+# --------------------------------------------------------------------
+# Configuration
+# --------------------------------------------------------------------
+CHECKPOINT_PATH = "/scratch_net/maus/mrostamian/project/mmformer_adapter/checkpoints_800plus/model_last.pth"  # Best checkpoint path
+BRATS_VAL_DIR   = "/scratch_net/maus/mrostamian/ASNR-MICCAI-BraTS2023-GLI-Challenge-ValidationData"
+OUTPUT_DIR      = "/scratch_net/maus/mrostamian/project/mmformer_adapter/online_predictions_mmformer_adapter_v6_final_new_pp"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+
+
+
+# --------------------------------------------------------------------
+# 1. Normalization
+# --------------------------------------------------------------------
+def normalize(vol):
+    """
+    Normalizes each modality channel independently.
+    Expects vol with shape [4, H, W, D].
+    """
+    mask = vol.sum(0) > 0
+    for k in range(4):
+        x = vol[k]
+        y = x[mask]
+        if y.size > 0:
+            vol[k] = (x - y.mean()) / (y.std() + 1e-8)
+    return vol
+
+# --------------------------------------------------------------------
+# 2. Save Final Segmentation
+# --------------------------------------------------------------------
+def save_prediction(volume, sample_paths, save_dir):
+    """
+    Saves the predicted segmentation volume (shape: [H, W, D], labels in {0,1,2,3})
+    as a NIfTI (.nii.gz) file.
+    
+    Uses the 't1c' file to extract the affine transformation.
+    """
+    os.makedirs(save_dir, exist_ok=True)
+    try:
+        orig_nii = nib.load(sample_paths['t1c'])
+        affine = orig_nii.affine
+    except Exception as e:
+        print("Error loading affine from t1c; using identity.", e)
+        affine = np.eye(4)
+
+    base_name = os.path.basename(sample_paths['t1c'])
+    parts = base_name.split('-')
+    if len(parts) >= 4:
+        case_id   = parts[2]
+        timepoint = parts[3][:3]
+    else:
+        case_id   = "unknown"
+        timepoint = "000"
+
+    out_name = f"{case_id}-{timepoint}.nii.gz"
+    out_path = os.path.join(save_dir, out_name)
+
+    brats_vol = np.zeros_like(volume, dtype=np.uint8)
+    brats_vol[volume == 1] = 1
+    brats_vol[volume == 2] = 2
+    brats_vol[volume == 3] = 3
+
+    nib.save(nib.Nifti1Image(brats_vol, affine), out_path)
+    print(f"Saved prediction to {out_path}")
+
+# --------------------------------------------------------------------
+# 3. Remove Small False Positives
+# --------------------------------------------------------------------
+
+# def remove_small_false_positives_3d(prediction, probability_volume, verbose=True):
+#     """
+#     Remove small or low-confidence connected components from prediction volume.
+    
+#     Parameters:
+#         prediction (ndarray): 3D array with class predictions (0–3).
+#         probability_volume (ndarray): 4D array with softmax probabilities, shape (H, W, D, C).
+#         verbose (bool): Whether to print filtered components.
+
+#     Returns:
+#         cleaned (ndarray): Post-processed 3D prediction.
+#     """
+#     cleaned = np.zeros_like(prediction)
+#     structure = generate_binary_structure(3, 3)
+
+#     class_params = {
+#         1: {'min_voxels': 400, 'min_prob': 0.80},  # NCR
+#         2: {'min_voxels': 800, 'min_prob': 0.80},  # ED
+#         3: {'min_voxels': 150, 'min_prob': 0.80}   # ET
+#     }
+
+#     for class_idx in [2, 1, 3]:  # Process ED, NCR, ET in order
+#         class_mask = (prediction == class_idx)
+#         labeled_mask, num_features = label(class_mask, structure=structure)
+#         if verbose:
+#             print(f"Class {class_idx}: Found {num_features} components")
+#         for i in range(1, num_features + 1):
+#             lesion_mask = (labeled_mask == i)
+#             vcount = lesion_mask.sum()
+#             prob_mask = probability_volume[..., class_idx]
+#             mean_prob = prob_mask[lesion_mask].mean() if vcount > 0 else 0
+
+#             # Rule 1: Global large lesion override
+#             if vcount > 1500:
+#                 cleaned[lesion_mask & (cleaned == 0)] = class_idx
+#                 if verbose:
+#                     print(f"  Component {i}: voxels={vcount}, mean_prob={mean_prob:.3f} → kept (rule 1: large lesion)")
+#                 continue
+
+#             # Rule 2: Class 3 (ET) special case
+#             if class_idx == 3 and vcount > 80 and mean_prob > 0.90:
+#                 cleaned[lesion_mask & (cleaned == 0)] = class_idx
+#                 if verbose:
+#                     print(f"  Component {i}: voxels={vcount}, mean_prob={mean_prob:.3f} → kept (rule 2: ET special)")
+#                 continue
+
+#             # Main rule: Apply class-specific thresholds
+#             params = class_params[class_idx]
+#             if vcount >= params['min_voxels'] and mean_prob >= params['min_prob']:
+#                 cleaned[lesion_mask & (cleaned == 0)] = class_idx
+#                 if verbose:
+#                     print(f"  Component {i}: voxels={vcount}, mean_prob={mean_prob:.3f} → kept")
+#             else:
+#                 if verbose:
+#                     print(f"  Component {i}: voxels={vcount}, mean_prob={mean_prob:.3f} → discarded")
+
+#     return cleaned
+
+
+import logging
+from typing import Dict, Optional
+
+import numpy as np
+from scipy.ndimage import label, generate_binary_structure
+
+
+def remove_small_false_positives_3d(
+    prediction: np.ndarray,
+    probability_volume: np.ndarray,
+    *,
+    # ───────── thresholds ────────────────────────────────────────────
+    large_voxel_thr: int = 1500,
+    min_prob_large: float = .65,                # used for large & regular
+    min_prob_regular: float = .8,                # used for large & regular
+    small_voxel_thr: Dict[int, int] = None,    # min size for small/high-conf
+    high_conf_thr: Dict[int, float] = None,    # prob thr for small/high-conf
+    class_voxel_thresholds: Optional[Dict[int, int]] = None,
+    connectivity: int = 3,
+    verbose: bool = True,
+    logger: Optional[logging.Logger] = None,
+) -> np.ndarray:
+    """
+    Remove small or low-confidence CCs based on class-specific rules:
+      1) large & confident → always keep
+      2) small but very confident (cls=1,3) → keep
+      3) regular class thresholds → keep
+    """
+
+    # default per-class ‘regular’ minimum size
+    if class_voxel_thresholds is None:
+        class_voxel_thresholds = {1: 400, 2: 800, 3: 150}
+
+    # for cls 1 & 3: minimum size *and* very high prob to accept small CCs
+    if small_voxel_thr is None:
+        small_voxel_thr = {1: 200, 3: 70}
+    if high_conf_thr is None:
+        high_conf_thr   = {1: 0.85, 3: 0.90}
+
+    # setup logger
+    if logger is None:
+        logger = logging.getLogger(__name__)
+        if not logger.handlers:
+            h = logging.StreamHandler()
+            h.setFormatter(logging.Formatter("%(message)s"))
+            logger.addHandler(h)
+        logger.setLevel(logging.INFO if verbose else logging.WARNING)
+
+    cleaned   = np.zeros_like(prediction, dtype=prediction.dtype)
+    structure = generate_binary_structure(3, connectivity)
+
+    for cls in (3, 1, 2):  # ET first, then NCR, then ED
+        mask   = prediction == cls
+        labeled, n_cc = label(mask, structure=structure)
+        logger.info(f"Class {cls}: {n_cc} components")
+
+        prob_map = probability_volume[..., cls]
+        reg_min  = class_voxel_thresholds[cls]
+
+        for i in range(1, n_cc + 1):
+            lesion   = (labeled == i)
+            vcount   = int(lesion.sum())
+            if vcount == 0:
+                continue
+            mean_prob = float(prob_map[lesion].mean())
+
+            keep, reason = False, "discarded"
+
+            # 1) large & confident
+            if vcount > large_voxel_thr and mean_prob >= min_prob_large:
+                keep, reason = True, "large & confident"
+
+            # 2) small but very confident (only for cls=1 or cls=3)
+            elif cls in small_voxel_thr and cls in high_conf_thr:
+                if vcount >= small_voxel_thr[cls] and mean_prob >= high_conf_thr[cls]:
+                    keep, reason = True, "small & very confident"
+
+            # 3) regular class threshold, just for class 2
+            elif vcount >= reg_min and mean_prob >= min_prob_regular:
+                keep, reason = True, "class threshold"
+
+
+            # # 2) small but very confident (only for cls=1 or cls=3)
+            # elif (
+            #     cls in small_voxel_thr
+            #     and cls in high_conf_thr
+            #     and vcount >= small_voxel_thr[cls]
+            #     and mean_prob >= high_conf_thr[cls]
+            # ):
+            #     keep, reason = True, "small & very confident"
+
+            # # 3) regular class threshold
+            # elif vcount >= reg_min and mean_prob >= min_prob_regular:
+            #     keep, reason = True, "class threshold"
+
+
+
+
+
+
+            if keep:
+                cleaned[lesion] = cls
+                logger.info(f"  • CC{i:02d}: {vcount} vox, p={mean_prob:.3f} → kept ({reason})")
+            else:
+                logger.info(f"  • CC{i:02d}: {vcount} vox, p={mean_prob:.3f} → discarded")
+
+    return cleaned
+
+
+
+
+
+
+
+# --------------------------------------------------------------------
+# 4. Inference Pipeline with Sliding Window
+# --------------------------------------------------------------------
+def sliding_window_inference(model, vol, brain_mask, window_size=128, overlap=0.5):
+    """
+    Performs sliding window inference.
+    
+    Inputs:
+      - vol: numpy array with shape [4, H, W, D] (normalized modalities)
+      - brain_mask: numpy array with shape [H, W, D]
+      - window_size: size of sliding patch (cubic)
+      - overlap: fractional overlap between patches
+      
+    Returns:
+      - pred_softmax: softmax probabilities, shape (H, W, D, 4)
+      - pred_labels: final label predictions (H, W, D)
+    """
+    _, H, W, D = vol.shape
+    stride = int(window_size * (1 - overlap))
+    device = next(model.parameters()).device
+
+    pred = np.zeros((4, H, W, D), dtype=np.float32)
+    count = np.zeros((1, H, W, D), dtype=np.float32)
+
+    h_steps = list(range(0, H - window_size + 1, stride))
+    if h_steps[-1] != H - window_size:
+        h_steps.append(H - window_size)
+    w_steps = list(range(0, W - window_size + 1, stride))
+    if w_steps[-1] != W - window_size:
+        w_steps.append(W - window_size)
+    d_steps = list(range(0, D - window_size + 1, stride))
+    if d_steps[-1] != D - window_size:
+        d_steps.append(D - window_size)
+
+    with torch.no_grad():
+        for h in h_steps:
+            for w in w_steps:
+                for d in d_steps:
+                    h_end = h + window_size
+                    w_end = w + window_size
+                    d_end = d + window_size
+
+                    mask_patch = brain_mask[h:h_end, w:w_end, d:d_end]
+                    x_patch = vol[:, h:h_end, w:w_end, d:d_end] * mask_patch
+                    
+                    x_t = torch.from_numpy(x_patch).unsqueeze(0).to(device).float()
+
+                    modality_mask = torch.tensor([[True, True, True, True]], device=device)
+                    
+                    output = model(x_t, mask=modality_mask)[0]
+                    output = output.squeeze(0).cpu().numpy()
+
+                    pred[:, h:h_end, w:w_end, d:d_end] += output
+                    count[:, h:h_end, w:w_end, d:d_end] += 1
+
+    pred = pred / (count + 1e-8)
+    pred_softmax = pred
+    pred_labels = np.argmax(pred_softmax, axis=0)
+
+    return pred_softmax.transpose(1, 2, 3, 0), pred_labels
+
+# --------------------------------------------------------------------
+# 5. Dataset / DataLoader
+# --------------------------------------------------------------------
+class BraTSOnlineValidationDataset(Dataset):
+    def __init__(self, root_dir):
+        self.samples = []
+        for case in os.listdir(root_dir):
+            case_dir = os.path.join(root_dir, case)
+            if os.path.isdir(case_dir):
+                mods = {
+                    't1c': os.path.join(case_dir, f"{case}-t1c.nii.gz"),
+                    't1n': os.path.join(case_dir, f"{case}-t1n.nii.gz"),
+                    't2f': os.path.join(case_dir, f"{case}-t2f.nii.gz"),
+                    't2w': os.path.join(case_dir, f"{case}-t2w.nii.gz")
+                }
+                if all(os.path.exists(p) for p in mods.values()):
+                    self.samples.append((mods, case))
+    
+    def __len__(self):
+        return len(self.samples)
+    
+    def __getitem__(self, idx):
+        modalities, case_id = self.samples[idx]
+        return modalities, case_id
+
+def custom_collate(batch):
+    return batch[0]
+
+# --------------------------------------------------------------------
+# 6. Load Model
+# --------------------------------------------------------------------
+def load_model(checkpoint_path):
+    model = Model(num_cls=4)
+    model = torch.nn.DataParallel(model)
+    ckpt = torch.load(checkpoint_path, map_location=device)
+    model.load_state_dict(ckpt['state_dict'])
+    model.to(device)
+    model.eval()
+    return model
+
+# --------------------------------------------------------------------
+# 7. Crop Function
+# --------------------------------------------------------------------
+def crop(vol):
+    """
+    Determine crop bounds from the non-zero region.
+    Expects vol shape (4, H, W, D).
+    Returns (x_min, x_max, y_min, y_max, z_min, z_max).
+    """
+    vol_for_crop = np.amax(vol, axis=0)
+    assert len(vol_for_crop.shape) == 3, "Expected 3D volume after collapsing channels."
+    x_nonzeros, y_nonzeros, z_nonzeros = np.where(vol_for_crop != 0)
+
+    x_min, x_max = np.amin(x_nonzeros), np.amax(x_nonzeros)
+    y_min, y_max = np.amin(y_nonzeros), np.amax(y_nonzeros)
+    z_min, z_max = np.amin(z_nonzeros), np.amax(z_nonzeros)
+
+    def sup_128(xmin, xmax):
+        if xmax - xmin < 128:
+            ecart = int((128 - (xmax - xmin)) / 2)
+            xmax = xmax + ecart + 1
+            xmin = xmin - ecart
+        if xmin < 0:
+            xmax -= xmin
+            xmin = 0
+        return xmin, xmax
+
+    x_min, x_max = sup_128(x_min, x_max)
+    y_min, y_max = sup_128(y_min, y_max)
+    z_min, z_max = sup_128(z_min, z_max)
+
+    return x_min, x_max, y_min, y_max, z_min, z_max
+
+# --------------------------------------------------------------------
+# 8. Main Inference Pipeline
+# --------------------------------------------------------------------
+if __name__ == "__main__":
+    model = load_model(CHECKPOINT_PATH)
+    dataset = BraTSOnlineValidationDataset(BRATS_VAL_DIR)
+    loader = DataLoader(dataset, batch_size=1, shuffle=False, collate_fn=custom_collate)
+
+    for (modalities, case_id) in tqdm(loader, desc="Processing Validation"):
+        mod_order = ['t1c', 't1n', 't2f', 't2w']
+        assert mod_order == ['t1c', 't1n', 't2f', 't2w'], "Modality order mismatch with training!"
+
+        vol_full = np.stack([nib.load(modalities[m]).get_fdata() for m in mod_order], axis=0)
+        full_shape = vol_full.shape[1:]
+        
+        vol_full = vol_full.astype(np.float32)
+        brain_mask_full = (vol_full.sum(0) > 0).astype(np.float32)
+        
+        x_min, x_max, y_min, y_max, z_min, z_max = crop(vol_full)
+        vol_cropped = vol_full[:, x_min:x_max, y_min:y_max, z_min:z_max]
+        brain_mask_cropped = brain_mask_full[x_min:x_max, y_min:y_max, z_min:z_max]
+        
+        vol_cropped = normalize(vol_cropped)
+        
+        pred_softmax, pred_labels_cropped = sliding_window_inference(model, vol_cropped, brain_mask_cropped)
+        cleaned_pred = remove_small_false_positives_3d(pred_labels_cropped, pred_softmax)
+        
+        full_pred = np.zeros(full_shape, dtype=np.uint8)
+        full_pred[x_min:x_max, y_min:y_max, z_min:z_max] = cleaned_pred
+        
+        assert full_pred.shape == full_shape, f"Full segmentation shape mismatch: {full_pred.shape} vs {full_shape}"
+        
+        save_prediction(full_pred, modalities, OUTPUT_DIR)
+
+
+
+
+
+# # --------------------------------------------------------------------
+# # 1. Normalization (Unchanged)
+# # --------------------------------------------------------------------
+# def normalize(vol):
+#     """Normalize each modality independently (shape [4, H, W, D])."""
+#     mask = vol.sum(0) > 0
+#     for k in range(4):
+#         x = vol[k]
+#         y = x[mask]
+#         if y.size > 0:
+#             vol[k] = (x - y.mean()) / (y.std() + 1e-8)
+#     return vol
+
+# # --------------------------------------------------------------------
+# # 2. Save Prediction (Unchanged)
+# # --------------------------------------------------------------------
+# def save_prediction(volume, sample_paths, save_dir):
+#     """
+#     Saves the predicted segmentation volume (shape: [H, W, D], labels in {0,1,2,3})
+#     as a NIfTI (.nii.gz) file.
+    
+#     Uses the 't1c' file to extract the affine transformation.
+#     """
+#     os.makedirs(save_dir, exist_ok=True)
+#     try:
+#         orig_nii = nib.load(sample_paths['t1c'])
+#         affine = orig_nii.affine
+#     except Exception as e:
+#         print("Error loading affine from t1c; using identity.", e)
+#         affine = np.eye(4)
+
+#     base_name = os.path.basename(sample_paths['t1c'])
+#     parts = base_name.split('-')
+#     if len(parts) >= 4:
+#         case_id   = parts[2]
+#         timepoint = parts[3][:3]
+#     else:
+#         case_id   = "unknown"
+#         timepoint = "000"
+
+#     out_name = f"{case_id}-{timepoint}.nii.gz"
+#     out_path = os.path.join(save_dir, out_name)
+
+#     brats_vol = np.zeros_like(volume, dtype=np.uint8)
+#     brats_vol[volume == 1] = 1
+#     brats_vol[volume == 2] = 2
+#     brats_vol[volume == 3] = 3
+
+#     nib.save(nib.Nifti1Image(brats_vol, affine), out_path)
+#     print(f"Saved prediction to {out_path}")
+
+# # --------------------------------------------------------------------
+# # 3. Post-Processing (Aligned with Original)
+# # --------------------------------------------------------------------
+
+
+# def original_enhancing_postprocessing(prediction):
+#     """
+#     Remove small connected components for each tumour class
+#     according to class‑specific voxel‐count thresholds.
+
+#     Class mapping (BraTS):
+#         1 – NCR/NET   (necrotic core or non‑enhancing tumour)
+#         2 – ED        (peritumoral oedema)
+#         3 – ET        (enhancing tumour)
+#     """
+#     # thresholds in voxels
+#     class_params = {
+#         1: {'min_voxels': 450},   # NCR/NET
+#         2: {'min_voxels': 700},   # ED
+#         3: {'min_voxels': 250},   # ET
+#     }
+
+#     cleaned = prediction.copy()
+#     structure = generate_binary_structure(3, 3)   # 26‑connectivity in 3‑D
+
+#     for cls, params in class_params.items():
+#         cls_mask = (prediction == cls)
+#         if not cls_mask.any():
+#             continue
+
+#         labeled, n_comp = label(cls_mask, structure)
+#         for comp_id in range(1, n_comp + 1):
+#             comp_mask = (labeled == comp_id)
+#             if comp_mask.sum() < params['min_voxels']:
+#                 cleaned[comp_mask] = 0            # re‑label as background
+
+#     return cleaned
+
+
+# # --------------------------------------------------------------------
+# # 4. Sliding Window Inference (probs)
+# # --------------------------------------------------------------------
+# def sliding_window_inference(model, vol, brain_mask, window_size=128, overlap=0.5):
+#     """
+#     Original logic: Aggregate probs, no softmax.
+#     Returns:
+#       - pred_labels: argmax over probs (shape [H, W, D])
+#     """
+#     _, H, W, D = vol.shape
+#     stride = int(window_size * (1 - overlap))
+#     num_cls = 4  # For BRATS2020/2023
+
+#     # Initialize logit accumulation
+#     probs = np.zeros((num_cls, H, W, D), dtype=np.float32)
+#     count = np.zeros((1, H, W, D), dtype=np.float32)
+
+#     # Sliding window indices
+#     h_steps = list(range(0, H - window_size + 1, stride))
+#     if h_steps[-1] != H - window_size:
+#         h_steps.append(H - window_size)
+#     w_steps = list(range(0, W - window_size + 1, stride))
+#     if w_steps[-1] != W - window_size:
+#         w_steps.append(W - window_size)
+#     d_steps = list(range(0, D - window_size + 1, stride))
+#     if d_steps[-1] != D - window_size:
+#         d_steps.append(D - window_size)
+
+#     # Inference
+#     with torch.no_grad():
+#         for h in h_steps:
+#             for w in w_steps:
+#                 for d in d_steps:
+#                     # Extract patch
+#                     h_end = h + window_size
+#                     w_end = w + window_size
+#                     d_end = d + window_size
+#                     patch = vol[:, h:h_end, w:w_end, d:d_end]
+                    
+#                     # Apply brain mask to input
+#                     mask_patch = brain_mask[h:h_end, w:w_end, d:d_end]
+#                     # x_patch = patch * mask_patch
+#                     x_patch = patch
+                    
+#                     # Predict
+#                     x_t = torch.from_numpy(x_patch).unsqueeze(0).to(device).float()
+#                     output = model(x_t, mask=torch.tensor([[True]*4], device=device))[0]
+#                     output = output.squeeze(0).cpu().numpy()  # Shape [4, 128, 128, 128]
+                    
+#                     # Accumulate probs
+#                     probs[:, h:h_end, w:w_end, d:d_end] += output
+#                     count[:, h:h_end, w:w_end, d:d_end] += 1
+
+#     # Average probs
+#     probs /= (count + 1e-8)
+    
+#     # Argmax directly on probs (no softmax)
+#     pred_labels = np.argmax(probs, axis=0)  # Shape [H, W, D]
+    
+#     return pred_labels
+
+# # --------------------------------------------------------------------
+# # 5. Dataset & Model Loading (Unchanged)
+# # --------------------------------------------------------------------
+# class BraTSOnlineValidationDataset(Dataset):
+#     def __init__(self, root_dir):
+#         self.samples = []
+#         for case in os.listdir(root_dir):
+#             case_dir = os.path.join(root_dir, case)
+#             mods = {
+#                 't1c': os.path.join(case_dir, f"{case}-t1c.nii.gz"),
+#                 't1n': os.path.join(case_dir, f"{case}-t1n.nii.gz"),
+#                 't2f': os.path.join(case_dir, f"{case}-t2f.nii.gz"),
+#                 't2w': os.path.join(case_dir, f"{case}-t2w.nii.gz")
+#             }
+#             if all(os.path.exists(p) for p in mods.values()):
+#                 self.samples.append((mods, case))
+
+#     def __len__(self):
+#         return len(self.samples)
+
+#     def __getitem__(self, idx):
+#         return self.samples[idx]
+
+# def custom_collate(batch):
+#     return batch[0]
+
+# # --------------------------------------------------------------------
+# # 6. Load Model
+# # --------------------------------------------------------------------
+# def load_model(checkpoint_path):
+#     model = Model(num_cls=4)
+#     model = torch.nn.DataParallel(model)
+#     ckpt = torch.load(checkpoint_path, map_location=device)
+#     model.load_state_dict(ckpt['state_dict'])
+#     model.to(device)
+#     model.eval()
+#     return model
+
+# # --------------------------------------------------------------------
+# # 6. Main Pipeline (No Cropping)
+# # --------------------------------------------------------------------
+# if __name__ == "__main__":
+#     model = load_model(CHECKPOINT_PATH)
+#     dataset = BraTSOnlineValidationDataset(BRATS_VAL_DIR)
+#     loader = DataLoader(dataset, batch_size=1, shuffle=False, collate_fn=custom_collate)
+
+
+#     for (modalities, case_id) in tqdm(loader, desc="Processing"):
+#         # Load and normalize full volume
+#         mod_order = ['t1c', 't1n', 't2f', 't2w']
+#         vol_full = np.stack([nib.load(modalities[m]).get_fdata() for m in mod_order], axis=0)
+#         vol_full = normalize(vol_full.astype(np.float32))
+        
+#         # Brain mask (no cropping)
+#         brain_mask = (vol_full.sum(0) > 0).astype(np.float32)
+        
+#         # Sliding window inference (full volume)
+#         pred_labels = sliding_window_inference(model, vol_full, brain_mask)
+        
+#         # Apply original post-processing for enhancing tumor
+#         pred_labels = original_enhancing_postprocessing(pred_labels)
+        
+#         # Save
+#         save_prediction(pred_labels, modalities, OUTPUT_DIR)

@@ -12,5 +12,10 @@
   "epochs": 300,
   "batch_size": 2,
   "checkpoint_selection": "Highest mean internal-validation Dice",
-  "patient_grouping": "All timepoints from the same patient remain in one partition."
+  "patient_grouping": "All timepoints from the same patient remain in one partition.",
+  "internal_lists_role": "Generated patient-disjoint 900/100 subdivisions for new runs.",
+  "internal_split_seeds": [
+    2026,
+    2027
+  ]
 }

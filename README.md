@@ -27,7 +27,8 @@ MEFCT uses pretrained encoders with partial fine-tuning. [Online evaluation repo
 
 ## Repository
 
-- [Models](models/): model definitions, training, pretraining, and inference scripts.
+- [Updated code](updated_code/): RFNet/mmFormer training with explicit validation lists, checkpoint selection, model definitions, and inference scripts.
+- [Original code](old_code/): the previous implementations.
 - [Data](data/): subject lists and transfer-cohort metadata.
 - [Evaluation](evaluation/): patient-level statistical analysis and image-quality evaluation.
 - [Results](results/): per-case scores, online reports, and source result files.
@@ -38,6 +39,8 @@ MEFCT uses pretrained encoders with partial fine-tuning. [Online evaluation repo
 The exact training, internal-validation, and local-evaluation lists for BraTS 2020 and BraTS 2023 are in [data/splits](data/splits/). See [Data](data/) for counts and the separate additional RFNet and transfer experiments.
 
 Install the model dependencies specified in [configs](configs/). Obtain the BraTS data and set the data and checkpoint paths in the model scripts before training or inference.
+
+The generated 900/100 subdivisions for the two additional RFNet development sets are provided for new runs. They do not replace the saved training settings of existing checkpoints. See [updated code](updated_code/) for training and final-evaluation commands.
 
 For statistical analysis of the saved scores:
 

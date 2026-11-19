@@ -1,0 +1,25 @@
+{
+  "dataset": "BraTS2023",
+  "outer_split_seed": 2026,
+  "internal_split_seed": 2026,
+  "internal_list_purpose": "Generated subdivision for new training runs; not a reconstruction of past run settings.",
+  "method": "Sample patients within one- and two-examination strata; retain 100 validation examinations.",
+  "counts": {
+    "train": {
+      "MRI_cases": 900,
+      "patients": 815
+    },
+    "val": {
+      "MRI_cases": 100,
+      "patients": 91
+    },
+    "test": {
+      "MRI_cases": 251,
+      "patients": 227
+    }
+  },
+  "development_cases": 1000,
+  "all_patient_overlaps": 0,
+  "training_seed": 1024,
+  "development_sha256": "c557db56fe2475e6403458f45e02ec8e364aec93c97fcd61bfd30ee64fff024b"
+}
