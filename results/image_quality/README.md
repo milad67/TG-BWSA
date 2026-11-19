@@ -1,5 +1,5 @@
 # Image-quality results
 
-The existing `per_case.csv` and `summary.csv` retain their original scores and case IDs. Their case list is preserved at `old_code/data/splits/brats2023/validation.txt` from the repository root.
+`per_case.csv` contains 6,777 rows for three RFNet variants, 251 BraTS 2023 cases and nine input conditions. `summary.csv` reports condition means and differences from clean inputs. Scores use the 0–1 Dice scale.
 
-The updated evaluation uses `data/splits/brats2023/test.txt`, the confirmed main 251-case local-evaluation list. Its run configuration is `configs/image_quality_main_251.json`. The previous scores have not been reassigned to the replacement cases. A new evaluation is required to produce the replacement scores.
+The evaluated cases match `data/splits/brats2023/test.txt`, the main local-evaluation partition. Clean inputs and all eight noise/blur conditions retain all four modalities. These results are reported in Table 19. The updated evaluation scripts are in `updated_code/image_quality/` and the configuration template is `configs/image_quality_main_251.json`.

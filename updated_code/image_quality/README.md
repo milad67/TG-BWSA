@@ -11,4 +11,4 @@ python updated_code/image_quality/collect_results.py --config path/to/config.jso
 
 Use complete-input checkpoints trained without the evaluation patients. A new split list does not change the training data of an existing checkpoint. Outputs include per-case scores, condition means, checkpoint hashes and hashes of all three split lists. Install `requirements.txt` in the RFNet environment before inference.
 
-The existing published image-quality scores retain their original case list. Scores for the replacement list require a new evaluation and a separate output directory.
+The manuscript results use the main 251-case list in `data/splits/brats2023/test.txt`. Per-case scores and condition means are available in `results/image_quality/`. Use a separate output directory for subsequent evaluations.

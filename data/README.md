@@ -15,7 +15,7 @@ The partitions are subject-disjoint. All MRI examinations from a patient remain 
 
 `splits/brats2023/split_2026` and `split_2027` each contain `development.txt` (1,000 cases), `train.txt` (900), `val.txt` (100), and `test.txt` (251). The final train/val subdivision is patient-disjoint. The two-examination patients are kept together. `split_manifest.json` records the generation settings and counts. The authors confirmed that these internal lists match the reported server runs.
 
-`splits/brats2023/validation.txt` now matches the confirmed main 251-case local-evaluation list. The former list associated with the existing image-quality results is preserved at `old_code/data/splits/brats2023/validation.txt` from the repository root. New scores for the replacement list require a new checkpoint evaluation.
+`splits/brats2023/validation.txt` now matches the confirmed main 251-case local-evaluation list. The image-quality results in `results/image_quality/` use this main local-evaluation list. The previous case list is retained with the original code.
 
 `splits/brats2020_to_2023/test.txt` lists the 886 transfer cases. `test_unseen_sites.txt` lists the nested subset of 466 cases from six institutions absent from the BraTS 2020 source cohort. The cohort metadata contains patient and institution identifiers from the official BraTS mapping.
 
