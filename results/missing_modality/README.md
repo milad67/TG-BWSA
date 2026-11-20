@@ -1,6 +1,6 @@
 # Missing-modality evaluation
 
-`complete_input_configurations.csv` reports Dice means and standard deviations over three runs for models trained with all four modalities. The 15 input configurations are reported in Table 18. Values use the 0–1 scale and retain the two-decimal precision of the reported configuration scores.
+`complete_input_configurations.csv` reports Dice means and standard deviations over three runs for models trained with all four modalities. The 15 input configurations are reported in Table 18. Values use the 0–1 scale and retain four decimal places for the reported means and standard deviations. Modality configurations follow the author-confirmed FLAIR, T1, T2, T1ce mask order.
 
 `results.xlsx` contains configuration-level scores for RFNet, RFNet+BWSA, and RFNet+TG-BWSA trained with random modality masking. Workbook scores are percentages. These configurations are reported in Table 19.
 
