@@ -2,11 +2,11 @@
 
 - `local/`: per-case Dice scores for the two additional RFNet validation splits.
 - `transfer/`: per-case Dice and HD95 for transfer from BraTS 2020 to BraTS 2023.
-- `image_quality/`: per-case scores and condition means for the noise and blur experiments.
-- `missing_modality/`: results across modality combinations.
+- [Image quality](image_quality/): Table 19 summary and archived per-case results from a preliminary noise and blur run.
+- [Missing modalities](missing_modality/): complete-input and masking-trained results for Tables 17 and 18.
 - `lora/`: the LoRA comparison results.
-- `online/`: official BraTS online evaluation reports and submission-level summaries.
+- [Online validation](online/): official BraTS reports, submission-level summaries, and the Table 10 submission manifest.
 - `statistics/`: paired patient-cluster bootstrap confidence intervals.
 - `training/`: epoch-level validation metrics.
 
-`computational_costs.csv` reports the model sizes and computational costs in the manuscript. Training-step times use the batch sizes listed in the table. Approximate values retain a `~` prefix. For pretrained MEFCT, trainable parameters are listed separately for the two fine-tuning phases.
+[`computational_costs.csv`](computational_costs.csv) transcribes Table 14, including model sizes, trainable parameters, time per training step, training batch size, and inference costs. For pretrained MEFCT, trainable parameters are listed separately for each fine-tuning phase.

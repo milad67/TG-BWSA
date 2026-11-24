@@ -23,7 +23,7 @@ Mean region-wise Dice (%) on the official BraTS 2023 online validation set.
 | MEUNet | 81.77 | 83.03 | 84.60 |
 | MEFCT | 77.95 | 82.09 | 82.45 |
 
-MEFCT uses pretrained encoders with partial fine-tuning. [Online evaluation reports](results/online/) include submission identifiers and regional metrics.
+MEFCT uses pretrained encoders with partial fine-tuning. The scores above are the manuscript values. The [online submission manifest](results/online/online_submissions_manifest.csv) connects Table 10 to the available region-wise and lesion-wise reports and records unresolved submission IDs.
 
 ## Repository
 
@@ -31,12 +31,14 @@ MEFCT uses pretrained encoders with partial fine-tuning. [Online evaluation repo
 - [Original code](old_code/): the previous implementations.
 - [Data](data/): subject lists and transfer-cohort metadata.
 - [Evaluation](evaluation/): patient-level statistical analysis and image-quality evaluation.
-- [Results](results/): per-case scores, online reports, and source result files.
+- [Results](results/): per-case scores, online reports, and artifact provenance for the manuscript tables.
 - [Configuration](configs/): software environment and experiment settings.
 
 ## Usage
 
 The exact training, internal-validation, and local-evaluation lists for BraTS 2020 and BraTS 2023 are in [data/splits](data/splits/). See [Data](data/) for counts and the separate additional RFNet and transfer experiments.
+
+The published 3D training entry points accept explicit split lists. See the [training documentation](updated_code/) for the scope of those interfaces and the retained 2D scripts.
 
 Install the model dependencies specified in [configs](configs/). Obtain the BraTS data and set the data and checkpoint paths in the model scripts before training or inference.
 
