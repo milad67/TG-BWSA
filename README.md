@@ -23,7 +23,7 @@ Mean region-wise Dice (%) on the official BraTS 2023 online validation set.
 | MEUNet | 81.77 | 83.03 | 84.60 |
 | MEFCT | 77.95 | 82.09 | 82.45 |
 
-MEFCT uses pretrained encoders with partial fine-tuning. The scores above are the manuscript values. The [online submission manifest](results/online/online_submissions_manifest.csv) connects Table 10 to the available region-wise and lesion-wise reports and records unresolved submission IDs.
+MEFCT uses pretrained encoders with partial fine-tuning. The scores above are the manuscript values. The [online submission manifest](results/online/online_submissions_manifest.csv) distinguishes entries linked to original Synapse reports from manuscript summaries.
 
 ## Repository
 
