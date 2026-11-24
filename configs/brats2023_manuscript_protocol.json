@@ -1,0 +1,105 @@
+{
+  "dataset": {
+    "name": "BraTS 2023",
+    "case_count": 1251,
+    "partitions": {
+      "training": {
+        "path": "data/splits/brats2023/train.txt",
+        "case_count": 875
+      },
+      "internal_validation": {
+        "path": "data/splits/brats2023/val.txt",
+        "case_count": 125
+      },
+      "local_evaluation": {
+        "path": "data/splits/brats2023/test.txt",
+        "case_count": 251
+      }
+    }
+  },
+  "adapter": {
+    "compression_ratio": 0.5,
+    "cmcr_dropout_probability": 0.1,
+    "tg_bwsa": {
+      "gate_parameterization": "Softplus applied to unconstrained scalars",
+      "epsilon": 0.001,
+      "initial_adaptation_weight_approx": 0.5,
+      "initial_preservation_weight_approx": 1,
+      "gate_l2_regularization": {
+        "coefficient": 0.0001,
+        "first_stage": 2,
+        "last_stage": "L"
+      }
+    }
+  },
+  "training": {
+    "RFNet": {
+      "patch_size_voxels": [
+        80,
+        80,
+        80
+      ],
+      "batch_size": 2,
+      "epochs": 300,
+      "optimizer": "Adam",
+      "input_normalization": "z-score",
+      "gpu": "NVIDIA A6000",
+      "gpu_count": 1
+    },
+    "mmFormer": {
+      "patch_size_voxels": [
+        128,
+        128,
+        128
+      ],
+      "batch_size": 2,
+      "epochs": 1000,
+      "optimizer": "Adam",
+      "input_normalization": "z-score",
+      "gpu": "NVIDIA A6000",
+      "gpu_count": 1
+    },
+    "MEUNet": {
+      "slice_size_pixels": [
+        224,
+        224
+      ],
+      "batch_size": 16,
+      "epochs": 100,
+      "optimizer": "AdamW",
+      "input_normalization": "min-max",
+      "gpu": "NVIDIA A6000",
+      "gpu_count": 4
+    },
+    "MEFCT": {
+      "slice_size_pixels": [
+        224,
+        224
+      ],
+      "batch_size": 16,
+      "epochs": 100,
+      "optimizer": "AdamW",
+      "input_normalization": "min-max",
+      "gpu": "NVIDIA A6000",
+      "gpu_count": 4,
+      "pretraining": {
+        "method": "RePre-style self-supervision",
+        "partition": "training"
+      },
+      "partial_fine_tuning": {
+        "phase_1": "Train the decoder and any added modules with all encoder layers frozen",
+        "phase_2": "Unfreeze the encoder bottleneck blocks and continue training the decoder and any added modules"
+      },
+      "low_rank_baseline": {
+        "placement": "Residual on post-self-attention activations",
+        "ranks": [
+          16,
+          32,
+          128
+        ],
+        "alpha_multiplier_of_rank": 2,
+        "dropout_probability": 0.1
+      }
+    }
+  }
+}

@@ -10,4 +10,6 @@ Official evaluation reports for selected submissions are grouped by submission i
 
 For the RFNet adapter rows, the author-provided mapping assigns `9752099` to RFNet + BWSA and `9752120` to RFNet + TG-BWSA. Each manifest row uses the region-wise and lesion-wise reports from that same submission. The lesion-wise scores therefore reflect the corrected model assignments for Table 11.
 
-MEUNet + TG-BWSA has two candidate submissions with the same region-wise scores. The exact submission ID is pending confirmation. The MEFCT + TG-BWSA row is awaiting a matching public report.
+The authors identified `9751548` as the primary MEUNet + TG-BWSA submission and `9751572` as a repeat upload. The public region-wise and lesion-wise CSVs are identical for the two submissions.
+
+[The MEFCT + TG-BWSA summary](mefct_tg_bwsa_manuscript_summary.csv) contains the region-wise values from Table 10. The submission ID and underlying Synapse report are pending. The manifest leaves the associated submission and report fields empty.

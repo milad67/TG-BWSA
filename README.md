@@ -32,7 +32,7 @@ MEFCT uses pretrained encoders with partial fine-tuning. The scores above are th
 - [Data](data/): subject lists and transfer-cohort metadata.
 - [Evaluation](evaluation/): patient-level statistical analysis and image-quality evaluation.
 - [Results](results/): per-case scores, online reports, and artifact provenance for the manuscript tables.
-- [Configuration](configs/): software environment and experiment settings.
+- [Configuration](configs/): software environment and experiment settings, including the [BraTS 2023 manuscript protocol](configs/brats2023_manuscript_protocol.json).
 
 ## Usage
 
